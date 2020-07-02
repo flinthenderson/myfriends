@@ -8,9 +8,10 @@
 {% if user.is_authenticated %}
     <h1>Welcome, {{ user.first_name }}!</h1>
 {% endif %}
-<h1>Here are your friends</h1>
+<h1>Here are your 5 last friends</h1>
 {% for friend in friends %}
     <h2>{{ friend }}</h2>
 {% endfor %}
+
 </body>
 </html>

@@ -8,6 +8,7 @@ def index(request):
 
 def friends(request):
 	user = request.user
+	print(user.id)
 	authuser = UserSocialAuth.objects.get(user_id=user.id)
 	getRecent = 'https://api.vk.com/method/friends.getRecent?'
 	payload = {'uid': str(authuser.extra_data['id']),
@@ -16,17 +17,22 @@ def friends(request):
 
 	r = requests.get(getRecent, params=payload)
 	listOfFriendsIds = r.json()['response']
-	context = {'friends': listOfFriendsIds}
+	listOfFriendsNames = get_list_of_friends(request, listOfFriendsIds, authuser.extra_data['access_token'])
+	context = {'friends': listOfFriendsNames}
 	return render(request, 'friendster/friends.html', context)
 
 def get_list_of_friends(request, listOfFriendsIds, access_token):
-	getProfile = 'https://api.vk.com/method/users.get?'
+	getProfile = 'https://api.vk.com/method/users.get'
 	listOfFriendsNames = []
 	for friendId in listOfFriendsIds:
-		payload = {'user_id': friendId, 'access_token': access_token, 'v': '5.120'}
-		r = requests.get(getProfile, params=payload)
-		first_name = r.json()['response'][0]['first_name']
-		last_name = r.json()['response'][0]['last_name']
-		listOfFriendsNames.append({str(friendId): [first_name, last_name]})
+		try:
+			payload = {'user_id': friendId, 'access_token': access_token, 'v': '5.120'}
+			r = requests.get(getProfile, params=payload)
+			first_name = r.json()['response'][0]['first_name']
+			last_name = r.json()['response'][0]['last_name']
+			listOfFriendsNames.append([str(friendId), first_name, last_name])
+			print(first_name + last_name)
+		except:
+			print('Error')
 
-	return listOfFriendsNames
+	return listOfFriendsNames[:5]
